@@ -1,0 +1,23 @@
+[Unit]
+Description=SEFAZ-MG Certificate Update Monitor (Python)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sefaz-monitor
+ExecStart=/usr/bin/python3 /opt/sefaz-monitor/sefaz_mg_cert_monitor.py --daemon --interval 3600
+Restart=on-failure
+RestartSec=60
+
+# Variáveis de ambiente para notificações
+EnvironmentFile=-/opt/sefaz-monitor/.env
+
+# Segurança
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/sefaz-monitor/.sefaz_monitor
+
+[Install]
+WantedBy=multi-user.target
