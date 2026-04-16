@@ -68,13 +68,28 @@ MODULE_ROOTS: dict[str, str] = {
     "NFCom":   "https://portalsped.fazenda.mg.gov.br/spedmg/nfcom/",
 }
 
-STATE_DIR = Path.home() / ".sefaz_monitor"
+def load_env_file(path: str) -> None:
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key, value)
+
+STATE_DIR = Path(".") / ".state_log"
 STATE_FILE = STATE_DIR / "state.json"
 LOG_FILE = STATE_DIR / "monitor.log"
+ENV_FILE = Path(".") / ".env"
+
+#
+load_env_file(os.path.expanduser(ENV_FILE))
 
 # Notificações via variáveis de ambiente
 SMTP_HOST = os.environ.get("SEFAZ_SMTP_HOST", "")
-SMTP_PORT = int(os.environ.get("SEFAZ_SMTP_PORT", "587"))
+SMTP_PORT = int(os.environ.get("SEFAZ_SMTP_PORT", "0"))
 SMTP_USER = os.environ.get("SEFAZ_SMTP_USER", "")
 SMTP_PASS = os.environ.get("SEFAZ_SMTP_PASS", "")
 MAIL_FROM = os.environ.get("SEFAZ_MAIL_FROM", "")
@@ -140,6 +155,7 @@ def fetch_page(url: str) -> Optional[str]:
 
 
 def discover_downloads_url(mod_name: str) -> Optional[str]:
+    
     """Auto-discovery: busca o link de downloads/documentos no menu lateral da página raiz."""
     root_url = MODULE_ROOTS.get(mod_name)
     if not root_url:
@@ -162,7 +178,6 @@ def discover_downloads_url(mod_name: str) -> Optional[str]:
 
     logger.warning("    Auto-discovery: nenhum link de downloads encontrado em %s", root_url)
     return None
-
 
 # ---------------------------------------------------------------------------
 # Parser
@@ -242,6 +257,7 @@ def parse_page(html: str) -> PageInfo:
 # State
 # ---------------------------------------------------------------------------
 def load_state() -> dict:
+
     if STATE_FILE.exists():
         try:
             return json.loads(STATE_FILE.read_text(encoding="utf-8"))
@@ -249,11 +265,9 @@ def load_state() -> dict:
             return {}
     return {}
 
-
 def save_state(state: dict) -> None:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, indent=2, ensure_ascii=False), encoding="utf-8")
-
 
 # ---------------------------------------------------------------------------
 # Notificações
@@ -348,12 +362,14 @@ def send_notifications(changes: list[dict]) -> None:
     # Console
     logger.warning(body)
 
-
 # ---------------------------------------------------------------------------
 # Monitor principal
 # ---------------------------------------------------------------------------
 def check_once() -> list[dict]:
-    logger.info("Iniciando verificação...")
+    logger.info("Iniciando verificação...")    
+
+    if SMTP_HOST and not SMTP_PASS:
+        raise RuntimeError("SEFAZ_SMTP_PASS não definido no ambiente. Execução cancelada!")
 
     state = load_state()
     changes: list[dict] = []
@@ -452,12 +468,16 @@ def cmd_reset() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SEFAZ-MG Certificate Update Monitor")
+    
     parser.add_argument("-d", "--daemon", action="store_true",
                         help="Executar em loop contínuo")
+    
     parser.add_argument("-i", "--interval", type=int, default=DEFAULT_INTERVAL,
                         help=f"Intervalo entre verificações em segundos (padrão: {DEFAULT_INTERVAL})")
+    
     parser.add_argument("-s", "--status", action="store_true",
                         help="Exibir último estado conhecido")
+    
     parser.add_argument("-r", "--reset", action="store_true",
                         help="Limpar estado salvo")
 
@@ -482,7 +502,6 @@ def main() -> None:
             time.sleep(args.interval)
     else:
         check_once()
-
 
 if __name__ == "__main__":
     main()

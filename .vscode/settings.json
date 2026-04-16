@@ -1,0 +1,4 @@
+  
+{
+  "python.envFile": "${env:HOME}/.sefaz_monitor/.env"
+}
