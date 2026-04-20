@@ -52,7 +52,7 @@ MONITORED_URLS: dict[str, str] = {
     "CT-e OS": "https://portalsped.fazenda.mg.gov.br/spedmg/cteos/Downloads/",
     "MDF-e":   "https://portalsped.fazenda.mg.gov.br/spedmg/mdfe/downloads/",
     "BP-e":    "https://portalsped.fazenda.mg.gov.br/spedmg/bpe/Downloads/",
-    "NF3-e":   "https://portalsped.fazenda.mg.gov.br/spedmg/nf3e/Documentos/",
+    "NF3-e":   "https://portalsped.fazenda.mg.gov.br/spedmg/nf3e/downloads/",
     "NFCom":   "https://portalsped.fazenda.mg.gov.br/spedmg/nfcom/downloads/",
 }
 
