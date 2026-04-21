@@ -16,6 +16,25 @@ Se uma URL configurada retornar 404 (caso o portal mude os paths), o monitor aut
 acessa a página raiz do módulo, busca o link "Downloads" ou "Documentos" no menu lateral
 e usa a URL correta. Isso protege contra mudanças de casing ou renomeação de paths.
 
+## Ambiente de desenvolvimento
+
+O projeto usa [mise](https://mise.jdx.dev/) para gerenciar a versão do Python e `.venv` para isolar os pacotes.
+
+### Pré-requisitos
+
+- [mise](https://mise.jdx.dev/) instalado e ativado no shell (`eval "$(mise activate zsh)"` no `~/.zshrc`)
+
+### Configuração inicial
+
+```bash
+mise install          # instala a versão do Python definida em mise.toml
+python -m venv .venv  # cria o ambiente virtual isolado
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+O VSCode detecta o `.venv` automaticamente — o `settings.json` já aponta para `${workspaceFolder}/.venv/bin/python`.
+
 ## Instalação
 
 ```bash
